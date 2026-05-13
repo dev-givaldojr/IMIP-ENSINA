@@ -1,0 +1,25 @@
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Patient {
+  id            String   @id @default(uuid())
+  name          String
+  age           Int
+  level         Int      @default(1)
+  xp            Int      @default(0)
+  streak        Int      @default(0)
+  interests     String[] // PostgreSQL string array
+  emotion       String   @default("neutral")
+  avatarUrl     String?
+  clinicalNotes String?  // Sensitive data
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}

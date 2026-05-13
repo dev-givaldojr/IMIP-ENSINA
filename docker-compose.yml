@@ -1,0 +1,132 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # INFRASTRUCTURE
+  # ==========================================
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: imip_admin
+      POSTGRES_PASSWORD: imip_password
+      POSTGRES_DB: imip_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U imip_admin -d imip_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    ports:
+      - "5672:5672"   # AMQP protocol port
+      - "15672:15672" # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: imip_admin
+      RABBITMQ_DEFAULT_PASS: imip_password
+
+  # ==========================================
+  # MICROSERVICES (Placeholders for next phase)
+  # ==========================================
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - AUTH_SERVICE_URL=http://auth-service:3002
+      - PATIENT_SERVICE_URL=http://patient-profile-service:3001
+      - PROGRESS_SERVICE_URL=http://pedagogical-progress-service:3003
+      - LUDIC_SERVICE_URL=http://ludic-host-service:3004
+      - JWT_SECRET=super_secret_hospital_key
+    depends_on:
+      - auth-service
+      - patient-profile-service
+      - pedagogical-progress-service
+      - ludic-host-service
+
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+    environment:
+      - JWT_SECRET=super_secret_hospital_key
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  patient-profile-service:
+    build:
+      context: ./services/patient-profile-service
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=postgresql://imip_admin:imip_password@postgres:5432/imip_db
+      - REDIS_URL=redis://redis:6379
+      - ENCRYPTION_KEY=12345678901234567890123456789012
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  generative-ai-service:
+    build:
+      context: ./services/generative-ai-service
+      dockerfile: Dockerfile
+    environment:
+      - RABBITMQ_URL=amqp://imip_admin:imip_password@rabbitmq:5672/
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-placeholder}
+      - API_GATEWAY_URL=http://api-gateway:8080
+    depends_on:
+      - rabbitmq
+
+  pedagogical-progress-service:
+    build:
+      context: ./services/pedagogical-progress-service
+      dockerfile: Dockerfile
+    environment:
+      - DATABASE_URL=file:./dev.db
+      - RABBITMQ_URL=amqp://imip_admin:imip_password@rabbitmq:5672/
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_started
+
+  ludic-host-service:
+    build:
+      context: ./services/ludic-host-service
+      dockerfile: Dockerfile
+    environment:
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - redis
+
+  # ==========================================
+  # FRONTEND UI
+  # ==========================================
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_GATEWAY_URL=http://localhost:8080
+
+volumes:
+  pgdata:
+  redisdata:
