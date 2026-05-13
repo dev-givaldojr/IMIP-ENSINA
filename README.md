@@ -1,4 +1,4 @@
-# IMIP Aprende 🦁✨
+# IMIP Aprende
 
 Uma plataforma web de alfabetização gamificada, concebida para crianças e adolescentes internados no IMIP, equipada com IA generativa e arquitetura moderna de microsserviços. 
 
@@ -6,7 +6,7 @@ O objetivo do projeto é transformar o processo de alfabetização em um ambient
 
 ---
 
-## 🌟 Principais Funcionalidades
+## Principais Funcionalidades
 
 - **Gamificação e Nivelamento**: Sistema de XP, níveis e *streaks* que incentivam a criança a continuar aprendendo (estilo Duolingo).
 - **Gerador de Trilhas com IA**: Criação de historinhas personalizadas em tempo real, geradas pela OpenAI e transmitidas instantaneamente para a tela via WebSockets.
@@ -16,7 +16,7 @@ O objetivo do projeto é transformar o processo de alfabetização em um ambient
 
 ---
 
-## 🏗️ Arquitetura do Sistema
+## Arquitetura do Sistema
 
 O projeto foi construído em uma arquitetura de **Microsserviços**, orquestrada pelo Docker Compose, para garantir que as rotas lentas de Inteligência Artificial não bloqueiem os acessos normais (como login e perfil de pacientes).
 
@@ -50,7 +50,7 @@ graph TD
 
 ---
 
-## 🚀 Como Rodar o Projeto Localmente
+## Como Rodar o Projeto Localmente
 
 Para rodar o projeto do zero na sua máquina, você precisa ter o **Docker Desktop** (ou Docker Engine) e o **Node.js** instalados.
 
@@ -78,7 +78,7 @@ Acesse no seu navegador: **http://localhost:3000**
 
 ---
 
-## 💻 Como Modificar o Código (Guia Rápido)
+## Como Modificar o Código (Guia Rápido)
 
 ### Mexendo no Visual (Frontend)
 - **Pasta:** `/frontend/src/`
